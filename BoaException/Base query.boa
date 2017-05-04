@@ -1,0 +1,33 @@
+#
+# Programa base - Consulta somente o último snapshot de projetos Java
+#
+
+p: Project = input;
+
+visit(p, visitor
+{
+	# look at Java-only projects  
+	before n: Project ->
+	{
+	    ifall (i: int; !match(`^java$`, lowercase(n.programming_languages[i])))
+	        stop;
+		
+		# Projects queries
+	}
+	
+	# only look at the latest snapshot 
+	before n: CodeRepository ->
+	{
+		snapshot := getsnapshot(n, "SOURCE_JAVA_JLS");
+		foreach (i: int; def(snapshot[i]))
+		{
+			visit(snapshot[i]);
+		}
+		
+		
+		# Repository queries
+		
+		stop;
+	}
+	
+});

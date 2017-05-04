@@ -1,0 +1,47 @@
+#
+# Lista todas as custom exceptions do sistema
+#
+
+p: Project = input;
+
+exceptions: output sum[string] of int; 
+
+visit(p, visitor
+{
+	# look at Java-only projects  
+	before n: Project ->
+	{
+	    ifall (i: int; !match(`^java$`, lowercase(n.programming_languages[i])))
+	        stop;
+		
+		# Projects queries
+	}
+	
+	# only look at the latest snapshot 
+	before n: CodeRepository ->
+	{
+		snapshot := getsnapshot(n, "SOURCE_JAVA_JLS");
+		foreach (i: int; def(snapshot[i]))
+		{
+			visit(snapshot[i]);
+		}
+		
+		# Repository queries
+		
+		
+		stop;
+	}
+	
+	
+	before node: Declaration ->
+	{
+		if (node.kind == TypeKind.CLASS)
+		{
+			if (match (`.*Exception$`, node.name))
+			{
+			    exceptions[p.name] << 1;
+			}
+		}
+	}
+	
+});
