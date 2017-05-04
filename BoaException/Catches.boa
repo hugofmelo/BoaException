@@ -1,11 +1,11 @@
 #
-# Lista todas as custom exceptions do sistema
+# Conta o número de catches do último snapshot de projetos Java
 #
 
 p: Project = input;
 
-exceptionsCounter: int;
-exceptions: output sum[string] of int; 
+catchesCounter: int;
+catches: output sum[string] of int;
 
 visit(p, visitor
 {
@@ -16,12 +16,12 @@ visit(p, visitor
 	        stop;
 		
 		# Projects queries
-		exceptionsCounter = 0;
+		catchesCounter = 0;
 	}
 	
 	after n: Project ->
 	{
-		exceptions[p.name] << exceptionsCounter;
+		catches[p.name] << catchesCounter;
 	}
 	
 	# only look at the latest snapshot 
@@ -33,20 +33,17 @@ visit(p, visitor
 			visit(snapshot[i]);
 		}
 		
+		
 		# Repository queries
 		
 		stop;
 	}
 	
-	
-	before node: Declaration ->
+	before node: Statement ->
 	{
-		if (node.kind == TypeKind.CLASS)
+		if (node.kind == StatementKind.CATCH)
 		{
-			if (match (`.*Exception$`, node.name))
-			{
-			    exceptionsCounter++;
-			}
+		    catchesCounter++;
 		}
 	}
 	

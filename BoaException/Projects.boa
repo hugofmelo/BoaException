@@ -1,22 +1,24 @@
 #
 # Lista os projetos Java
 #
+
 p: Project = input;
 
-projectsNumber: output sum of int;
+projectsN: output sum of int;
 projects: output collection[string] of string;
 
 
-visit(p, visitor {
-    # look at Java-only projects  
+visit(p, visitor
+{
+	# look at Java-only projects  
 	before n: Project ->
 	{
 	    ifall (i: int; !match(`^java$`, lowercase(n.programming_languages[i])))
 	        stop;
 		
-		foreach (i: int; n.programming_languages[i])
-			projects[p.name] << n.programming_languages[i];
-			
-		projectsNumber << 1;
+		# Projects queries
+		projectsN << 1;
+		projects[p.name] << p.id;
 	}
+	
 });

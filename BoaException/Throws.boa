@@ -1,0 +1,78 @@
+#
+# Conta o número de simple throws e rethrows do último snapshot de projetos Java
+#
+
+p: Project = input;
+
+simpleCounter: int;
+reCounter: int;
+
+simple: output sum[string] of int;
+re: output sum[string] of int;
+
+catchesStack: stack of string;
+
+push (catchesStack, "BOTTOM");
+
+visit(p, visitor
+{
+	# look at Java-only projects  
+	before n: Project ->
+	{
+	    ifall (i: int; !match(`^java$`, lowercase(n.programming_languages[i])))
+	        stop;
+		
+		# Projects queries
+		simpleCounter = 0;
+		reCounter = 0;
+	}
+	
+	after n: Project ->
+	{
+		simple[p.name] << simpleCounter;
+		re[p.name] << reCounter;
+	}
+	
+	# only look at the latest snapshot 
+	before n: CodeRepository ->
+	{
+		snapshot := getsnapshot(n, "SOURCE_JAVA_JLS");
+		foreach (i: int; def(snapshot[i]))
+		{
+			visit(snapshot[i]);
+		}
+		
+		
+		# Repository queries
+		
+		stop;
+	}
+	
+	before node: Statement ->
+	{
+		if (node.kind == StatementKind.CATCH)
+		{
+		    push (catchesStack, node.variable_declaration.variable_type.name);
+		}
+		else if (node.kind == StatementKind.THROW )
+		{
+			if (peek (catchesStack) == "BOTTOM")
+			{
+				simpleCounter++;
+			}
+			else
+			{
+				reCounter++;
+			} 
+        }
+	}
+	
+	after node: Statement ->
+	{
+		if (node.kind == StatementKind.CATCH)
+		{
+		    pop (catchesStack);
+		}
+	}
+	
+});
