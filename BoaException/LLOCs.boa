@@ -40,8 +40,7 @@ visit(p, visitor
 		{
 			visit(snapshot[i]);
 		}
-		
-		
+				
 		# Repository queries
 		
 		stop;
