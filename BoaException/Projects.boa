@@ -4,6 +4,7 @@
 
 p: Project = input;
 
+existsJavaFile: bool;
 projectsN: output sum of int;
 projects: output collection[string] of string;
 
@@ -14,11 +15,29 @@ visit(p, visitor
 	before n: Project ->
 	{
 	    ifall (i: int; !match(`^java$`, lowercase(n.programming_languages[i])))
-	        stop;
+	    	stop;
 		
 		# Projects queries
-		projectsN << 1;
-		projects[p.name] << p.id;
 	}
 	
+	before n: CodeRepository ->
+	{
+		existsJavaFile = false;
+		snapshot := getsnapshot(n, "SOURCE_JAVA_JLS");
+		foreach (i: int; def(snapshot[i]))
+		{
+			existsJavaFile = true;
+			visit(snapshot[i]);
+		}
+		
+		if (existsJavaFile)
+		{
+			projectsN << 1;
+			projects[p.name] << p.id;
+		}
+			
+		# Repository queries
+		
+		stop;
+	}
 });

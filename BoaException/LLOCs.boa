@@ -2,23 +2,9 @@
 # Calcula os LLOCs(Logical Lines of Code) do último snapshot de projetos Java
 #
 
-
-llocs := function(node: ASTRoot) : int {
-    count := 0;
-
-    visit(node, visitor
-    {
-        before node: Statement ->
-            if (node.kind != StatementKind.BLOCK)
-                count = count + 1;
-    });
-
-    return count;
-};
-
-
 p: Project = input;
 
+LLOCsCount: int;
 LLOCs: output sum[string] of int;
 
 visit(p, visitor
@@ -30,6 +16,12 @@ visit(p, visitor
 	        stop;
 		
 		# Projects queries
+		LLOCsCount = 0;
+	}
+	
+	after n:Project ->
+	{
+		LLOCs[p.name] << LLOCsCountProjects;
 	}
 	
 	# only look at the latest snapshot 
@@ -46,7 +38,11 @@ visit(p, visitor
 		stop;
 	}
 	
-	before node: ASTRoot ->
-		LLOCs[p.name] << llocs(node);
-	
+	before node: Statement ->
+	{
+        if (node.kind != StatementKind.BLOCK)
+        {
+            LLOCsCount++;
+        }
+    }
 });
