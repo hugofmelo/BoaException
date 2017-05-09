@@ -8,6 +8,7 @@ existsJavaFile: bool;
 projectsN: output sum of int;
 projects: output collection[string] of string;
 
+lastCommitDate: time;
 
 visit(p, visitor
 {
@@ -18,26 +19,27 @@ visit(p, visitor
 	    	stop;
 		
 		# Projects queries
+		
 	}
 	
 	before n: CodeRepository ->
 	{
 		existsJavaFile = false;
 		snapshot := getsnapshot(n, "SOURCE_JAVA_JLS");
-		foreach (i: int; def(snapshot[i]))
-		{
-			existsJavaFile = true;
-			visit(snapshot[i]);
-		}
 		
-		if (existsJavaFile)
+		# Verifica se existem arquivos Java validos
+		if (len (snapshot) > 0)
 		{
+			# Repository queries
 			projectsN << 1;
 			projects[p.name] << p.id;
-		}
 			
-		# Repository queries
-		
-		stop;
+			lastCommitDate = n.revisions // TODO
+			
+		}
+		else
+		{
+			stop;	
+		}
 	}
 });
