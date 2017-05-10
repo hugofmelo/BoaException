@@ -22,11 +22,6 @@ visit(p, visitor
 		LLOCsCount = 0;
 	}
 	
-	after n:Project ->
-	{
-		LLOCs[p.name] << LLOCsCount;
-	}
-	
 	before n: CodeRepository ->
 	{
 		snapshot := getsnapshot(n, "SOURCE_JAVA_JLS");
@@ -43,6 +38,8 @@ visit(p, visitor
 				{
 					visit(snapshot[i]);
 				}
+				
+				LLOCs[p.name] << LLOCsCount;
 			}
 		}
 		

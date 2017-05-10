@@ -22,11 +22,6 @@ visit(p, visitor
 		exceptionsCounter = 0;
 	}
 	
-	after n: Project ->
-	{
-		exceptions[p.name] << exceptionsCounter;
-	}
-	
 	before n: CodeRepository ->
 	{
 		snapshot := getsnapshot(n, "SOURCE_JAVA_JLS");
@@ -43,6 +38,8 @@ visit(p, visitor
 				{
 					visit(snapshot[i]);
 				}
+				
+				exceptions[p.name] << exceptionsCounter;
 			}
 		}
 		

@@ -30,12 +30,6 @@ visit(p, visitor
 		reCounter = 0;
 	}
 	
-	after n: Project ->
-	{
-		simple[p.name] << simpleCounter;
-		re[p.name] << reCounter;
-	}
-	
 	before n: CodeRepository ->
 	{
 		snapshot := getsnapshot(n, "SOURCE_JAVA_JLS");
@@ -52,6 +46,9 @@ visit(p, visitor
 				{
 					visit(snapshot[i]);
 				}
+				
+				simple[p.name] << simpleCounter;
+				re[p.name] << reCounter;
 			}
 		}
 		

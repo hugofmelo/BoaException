@@ -22,11 +22,6 @@ visit(p, visitor
 		catchesCounter = 0;
 	}
 	
-	after n: Project ->
-	{
-		catches[p.name] << catchesCounter;
-	}
-	
 	before n: CodeRepository ->
 	{
 		snapshot := getsnapshot(n, "SOURCE_JAVA_JLS");
@@ -43,6 +38,8 @@ visit(p, visitor
 				{
 					visit(snapshot[i]);
 				}
+				
+				catches[p.name] << catchesCounter;
 			}
 		}
 		
