@@ -1,5 +1,5 @@
 #
-# Calcula os LLOCs(Logical Lines of Code) do último snapshot de projetos Java
+# Calcula os LLOCs(Logical Lines of Code) dos projetos da Base query.
 #
 
 p: Project = input;
@@ -7,13 +7,16 @@ p: Project = input;
 LLOCsCount: int;
 LLOCs: output sum[string] of int;
 
+firstCommitDate: time;
+lastCommitDate: time;
+
 visit(p, visitor
 {
 	# look at Java-only projects  
 	before n: Project ->
 	{
 	    ifall (i: int; !match(`^java$`, lowercase(n.programming_languages[i])))
-	        stop;
+	    	stop;
 		
 		# Projects queries
 		LLOCsCount = 0;
@@ -21,21 +24,29 @@ visit(p, visitor
 	
 	after n:Project ->
 	{
-		LLOCs[p.name] << LLOCsCountProjects;
+		LLOCs[p.name] << LLOCsCount;
 	}
 	
-	# only look at the latest snapshot 
 	before n: CodeRepository ->
 	{
 		snapshot := getsnapshot(n, "SOURCE_JAVA_JLS");
-		foreach (i: int; def(snapshot[i]))
-		{
-			visit(snapshot[i]);
-		}
-				
-		# Repository queries
 		
-		stop;
+		# Verifica se existem arquivos Java validos
+		if (len (snapshot) > 0)
+		{
+			firstCommitDate = n.revisions[0].commit_date;
+			lastCommitDate = n.revisions[ len(n.revisions) - 1 ].commit_date;
+			
+			if ( lastCommitDate > addmonth(firstCommitDate,6) && len(n.revisions) > 30)
+			{	
+				foreach (i: int; def(snapshot[i]))
+				{
+					visit(snapshot[i]);
+				}
+			}
+		}
+		
+		stop;		
 	}
 	
 	before node: Statement ->

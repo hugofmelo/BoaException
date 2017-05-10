@@ -1,5 +1,5 @@
 #
-# Conta o número de simple throws e rethrows do último snapshot de projetos Java
+# Conta o número de simple throws e rethrows dos projetos da Base query
 #
 
 p: Project = input;
@@ -14,13 +14,16 @@ catchesStack: stack of string;
 
 push (catchesStack, "BOTTOM");
 
+firstCommitDate: time;
+lastCommitDate: time;
+
 visit(p, visitor
 {
 	# look at Java-only projects  
 	before n: Project ->
 	{
 	    ifall (i: int; !match(`^java$`, lowercase(n.programming_languages[i])))
-	        stop;
+	    	stop;
 		
 		# Projects queries
 		simpleCounter = 0;
@@ -33,21 +36,28 @@ visit(p, visitor
 		re[p.name] << reCounter;
 	}
 	
-	# only look at the latest snapshot 
 	before n: CodeRepository ->
 	{
 		snapshot := getsnapshot(n, "SOURCE_JAVA_JLS");
-		foreach (i: int; def(snapshot[i]))
+		
+		# Verifica se existem arquivos Java validos
+		if (len (snapshot) > 0)
 		{
-			visit(snapshot[i]);
+			firstCommitDate = n.revisions[0].commit_date;
+			lastCommitDate = n.revisions[ len(n.revisions) - 1 ].commit_date;
+			
+			if ( lastCommitDate > addmonth(firstCommitDate,6) && len(n.revisions) > 30)
+			{	
+				foreach (i: int; def(snapshot[i]))
+				{
+					visit(snapshot[i]);
+				}
+			}
 		}
 		
-		
-		# Repository queries
-		
-		stop;
+		stop;		
 	}
-	
+		
 	before node: Statement ->
 	{
 		if (node.kind == StatementKind.CATCH)
@@ -74,5 +84,4 @@ visit(p, visitor
 		    pop (catchesStack);
 		}
 	}
-	
 });

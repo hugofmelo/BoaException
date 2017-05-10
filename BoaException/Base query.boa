@@ -1,8 +1,17 @@
 #
-# Programa base - Consulta somente o último snapshot de projetos Java
+# Programa base - Consulta:
+# (1) último snapshot de projetos Java
+# (2) que possuem ao menos um arquivo Java válido
+# (3) que possui pelo menos 30 commits
+# (4) que a diferença entre primeiro e último commit seja de pelo menos 6 meses
 #
 
 p: Project = input;
+
+projects: output collection[string] of string;
+
+firstCommitDate: time;
+lastCommitDate: time;
 
 visit(p, visitor
 {
@@ -10,24 +19,30 @@ visit(p, visitor
 	before n: Project ->
 	{
 	    ifall (i: int; !match(`^java$`, lowercase(n.programming_languages[i])))
-	        stop;
+	    	stop;
 		
 		# Projects queries
 	}
 	
-	# only look at the latest snapshot 
 	before n: CodeRepository ->
 	{
 		snapshot := getsnapshot(n, "SOURCE_JAVA_JLS");
-		foreach (i: int; def(snapshot[i]))
+		
+		# Verifica se existem arquivos Java validos
+		if (len (snapshot) > 0)
 		{
-			visit(snapshot[i]);
+			firstCommitDate = n.revisions[0].commit_date;
+			lastCommitDate = n.revisions[ len(n.revisions) - 1 ].commit_date;
+			
+			if ( lastCommitDate > addmonth(firstCommitDate,6) && len(n.revisions) > 30)
+			{	
+				foreach (i: int; def(snapshot[i]))
+				{
+					visit(snapshot[i]);
+				}
+			}
 		}
 		
-		
-		# Repository queries
-		
-		stop;
+		stop;		
 	}
-	
 });
