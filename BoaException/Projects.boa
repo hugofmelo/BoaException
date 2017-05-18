@@ -36,6 +36,8 @@ visit(p, visitor
 				{
 					visit(snapshot[i]);
 				}
+				
+				projects[p.name] << p.project_url;
 			}
 		}
 		
