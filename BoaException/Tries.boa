@@ -1,0 +1,56 @@
+#
+# Conta o número de tries dos projetos da Base query
+#
+
+p: Project = input;
+
+triesCounter: int;
+tries: output sum[string] of int;
+
+firstCommitDate: time;
+lastCommitDate: time;
+
+visit(p, visitor
+{
+	# look at Java-only projects  
+	before n: Project ->
+	{
+	    ifall (i: int; !match(`^java$`, lowercase(n.programming_languages[i])))
+	    	stop;
+		
+		# Projects queries
+		triesCounter = 0;
+	}
+	
+	before n: CodeRepository ->
+	{
+		snapshot := getsnapshot(n, "SOURCE_JAVA_JLS");
+		
+		# Verifica se existem arquivos Java validos
+		if (len (snapshot) > 0)
+		{
+			firstCommitDate = n.revisions[0].commit_date;
+			lastCommitDate = n.revisions[ len(n.revisions) - 1 ].commit_date;
+			
+			if ( lastCommitDate > addmonth(firstCommitDate,6) && len(n.revisions) > 30)
+			{	
+				foreach (i: int; def(snapshot[i]))
+				{
+					visit(snapshot[i]);
+				}
+				
+				tries[p.name] << triesCounter;
+			}
+		}
+		
+		stop;		
+	}
+	
+	before node: Statement ->
+	{
+        if (node.kind == StatementKind.TRY)
+		{
+		    triesCounter++;
+		}
+    }
+});
